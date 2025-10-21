@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استعلام عن الفحص</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      text-align: center;
+      background-color: #f9f9f9;
+      padding: 50px;
+    }
+
+    input {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>استعلام عن الفحص</h1>
+  <input type="text" id="number" placeholder="رقم الفحص">
+  <input type="text" id="year" placeholder="السنة">
+  <button id="searchBtn">بحث</button>
+
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('searchBtn').addEventListener('click', async () => {
+      const number = document.getElementById('number').value.trim();
+      const year = document.getElementById('year').value.trim();
+      const resultDiv = document.getElementById('result');
+
+      if (!number || !year) {
+        resultDiv.textContent = 'من فضلك أدخل رقم الفحص والسنة.';
+        return;
+      }
+
+      resultDiv.textContent = 'جارٍ البحث...';
+
+      try {
+        const res = await fetch(`/api/search?number=${number}&year=${year}`);
+        const data = await res.json();
+        if (data.success) {
+          resultDiv.innerHTML = `
+            <strong>الاسم:</strong> ${data.result.name}<br>
+            <strong>رقم الفحص:</strong> ${data.result.number}<br>
+            <strong>السنة:</strong> ${data.result.year}
+          `;
+        } else {
+          resultDiv.textContent = 'لم يتم العثور على بيانات لهذا الفحص.';
+        }
+      } catch (error) {
+        resultDiv.textContent = 'حدث خطأ أثناء البحث.';
+      }
+    });
+  </script>
+
+
+
+
+
+
+  
+</body>
+
+</html>
