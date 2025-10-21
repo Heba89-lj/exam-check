@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
       background-color: #f9f9f9;
       padding: 50px;
     }
+
     input {
       padding: 10px;
       margin: 10px;
@@ -18,6 +20,7 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
+
     button {
       padding: 10px 20px;
       font-size: 18px;
@@ -27,7 +30,11 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    button:hover { background: #218838; }
+
+    button:hover {
+      background: #218838;
+    }
+
     #result {
       margin-top: 30px;
       font-size: 18px;
@@ -35,6 +42,7 @@
     }
   </style>
 </head>
+
 <body>
   <h1>استعلام عن الفحص</h1>
   <input type="text" id="number" placeholder="رقم الفحص">
@@ -74,49 +82,12 @@
     });
   </script> -->
 
+
+
+
+
+
   
- <script>
-    const searchBtn = document.getElementById("searchBtn");
-
-    searchBtn.addEventListener("click", async () => {
-      const examNumber = document.getElementById("examNumber").value.trim();
-      const year = document.getElementById("year").value.trim();
-      const resultDiv = document.getElementById("result");
-      const errorDiv = document.getElementById("error");
-
-      resultDiv.style.display = "none";
-      errorDiv.textContent = "";
-
-      if (!examNumber || !year) {
-        errorDiv.textContent = "ادخلي رقم الفحص وسنة الفحص";
-        return;
-      }
-
-      try {
-        const res = await fetch(`/search?examNumber=${examNumber}&year=${year}`);
-        if (res.ok) {
-          const data = await res.json();
-
-          document.getElementById("resExamNumber").textContent = data.ExamNumber || data["رقم الفحص"] || "";
-          document.getElementById("resYear").textContent = data.Year || data["السنة"] || "";
-          document.getElementById("caseNumber").textContent = data.CaseNumber || data["رقم القضية"] || "";
-          document.getElementById("applicantName").textContent = data.Applicant || data["اسم مقدم الطلب"] || "";
-          document.getElementById("status").textContent = data.Status || data["حالة الفحص"] || data["حالة الطلب"] || "";
-          document.getElementById("visa").textContent = data.Signatures || data["التأشيرات"] || "";
-          document.getElementById("notes").textContent = data.Notes || data["ملاحظات"] || "";
-
-          resultDiv.style.display = "block";
-        } else if (res.status === 404) {
-          errorDiv.textContent = "لا توجد بيانات";
-        } else {
-          errorDiv.textContent = "حدث خطأ، حاولى مرة اخرى";
-        }
-      } catch (err) {
-        errorDiv.textContent = "حدث خطأ فى الاتصال بالسيرفر";
-        console.error(err);
-      }
-    });
-  </script>
 </body>
-</html>
 
+</html>
