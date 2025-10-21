@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(__dirname));
 
 app.get("/search", async (req, res) => {
   const { number, year } = req.query;
@@ -48,3 +48,4 @@ app.get("/search", async (req, res) => {
 });
 
 app.listen(port, () => console.log(`✅ Server running on port ${port}`));
+
