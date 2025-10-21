@@ -65,7 +65,7 @@
       resultDiv.textContent = 'جارٍ البحث...';
 
       try {
-        const res = await fetch(`/search?number=${number}&year=${year}`);
+        const res = await fetch(`/api/search?number=${number}&year=${year}`);
         const data = await res.json();
         if (data.success) {
           resultDiv.innerHTML = `
@@ -92,3 +92,4 @@
 
 
 </html>
+
