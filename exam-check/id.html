@@ -35,17 +35,17 @@ function arabicToEnglishNumbers(str) {
 }
 
 async function search() {
-    let id = document.getElementById('idNumber').value.replace(/\s/g,'');
-    id = arabicToEnglishNumbers(id);
-    const lang = document.getElementById('lang').value;
     const resultDiv = document.getElementById('result');
-
-    if(id.length !== 14 || isNaN(id)) {
-        resultDiv.innerHTML = lang === 'ar' ? 'الرقم القومي يجب أن يكون 14 رقم' : 'ID number must be 14 digits';
-        return;
-    }
-
     try {
+        let id = document.getElementById('idNumber').value.replace(/\s/g,'');
+        id = arabicToEnglishNumbers(id);
+        const lang = document.getElementById('lang').value;
+
+        if(id.length !== 14 || isNaN(id)) {
+            resultDiv.innerHTML = lang === 'ar' ? 'الرقم القومي يجب أن يكون 14 رقم' : 'ID number must be 14 digits';
+            return;
+        }
+
         const res = await fetch(`/api/id?id=${id}&lang=${lang}`);
         let data;
 
@@ -66,14 +66,11 @@ async function search() {
                 console.error('Response not JSON', e);
             }
         }
-
-   catch(err) {
-  console.error('Sheets API error:', err.message, err.stack);
-  return res.status(500).json({ message: lang==='ar' ? 'خطأ في جلب البيانات من الشيت: '+err.message : 'Error fetching data from sheet: '+err.message });
-}
-
+    } catch(err) {
+        resultDiv.innerHTML = lang === 'ar' ? 'حدث خطأ أثناء جلب البيانات' : 'Error fetching data';
+        console.error(err);
+    }
 }
 </script>
 </body>
 </html>
-
