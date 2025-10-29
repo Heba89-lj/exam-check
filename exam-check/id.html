@@ -1,73 +1,79 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>الاستعلام عن رقم الفحص</title>
+<meta charset="UTF-8">
+<title>استعلام رقم الفحص</title>
 <style>
-body { font-family: "Cairo", sans-serif; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; padding: 20px; }
-header { width: 100%; background: #1a237e; color: white; text-align: center; padding: 15px 0; font-size: 1.4rem; font-weight: bold; position: fixed; top: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-main { margin-top: 90px; width: 100%; max-width: 450px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.1); text-align: center; }
-input, button { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; border-radius: 8px; }
-input { border: 1px solid #ccc; text-align: center; }
-input:focus { border-color: #1a237e; outline: none; }
-button { background: #1a237e; color: white; border: none; cursor: pointer; transition: 0.3s; }
-button:hover { background: #283593; }
-#result { margin-top: 20px; text-align: right; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-th { background: #1a237e; color: white; }
-@media (max-width: 480px) { input, button { font-size: 14px; padding: 10px; } main { padding: 15px; } }
+body { font-family: "Cairo", sans-serif; padding: 50px; background: #f5f5f5; }
+.container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+input, select, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
+button { cursor: pointer; }
+.result { margin-top: 20px; }
 </style>
 </head>
 <body>
-<header>وحدة الفحص المتنوع - النيابة العامة</header>
-<main>
-<h1>الاستعلام عن رقم الفحص</h1>
-<input id="nationalId" placeholder="أدخل الرقم القومي" maxlength="14" inputmode="numeric">
-<button id="searchBtn">بحث</button>
-<div id="result"></div>
-</main>
+<div class="container">
+<h2>استعلام رقم الفحص</h2>
+<input type="text" id="idNumber" placeholder="ادخل الرقم القومي" maxlength="14">
+<select id="lang">
+    <option value="ar">العربية</option>
+    <option value="en">English</option>
+</select>
+<button onclick="search()">بحث</button>
+<div class="result" id="result"></div>
+</div>
 
 <script>
-function normalizeArabic(str = "") {
-  return str.replace(/[٠-٩]/g, d => "0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]).trim();
+// تحويل الأرقام العربية للإنجليزية
+function arabicToEnglishNumbers(str) {
+    const arabic = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    const english = ['0','1','2','3','4','5','6','7','8','9'];
+    return str.split('').map(c => {
+        const index = arabic.indexOf(c);
+        return index > -1 ? english[index] : c;
+    }).join('');
 }
 
-document.getElementById("searchBtn").addEventListener("click", async () => {
-  const input = document.getElementById("nationalId").value.trim();
-  const nid = normalizeArabic(input);
+async function search() {
+    let id = document.getElementById('idNumber').value.replace(/\s/g,''); // إزالة المسافات
+    id = arabicToEnglishNumbers(id); // تحويل أرقام عربية
+    const lang = document.getElementById('lang').value;
+    const resultDiv = document.getElementById('result');
 
-  if (!/^\d{14}$/.test(nid)) {
-    alert("من فضلك أدخل الرقم القومي المكون من 14 رقمًا فقط.");
-    return;
-  }
-
-  const resultDiv = document.getElementById("result");
-  resultDiv.innerHTML = "<p>جارٍ البحث...</p>";
-
-  try {
-    const res = await fetch(`/api/id?nationalId=${encodeURIComponent(nid)}`);
-    const data = await res.json();
-    console.log("API response:", data);
-
-    if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-      resultDiv.innerHTML = "<p>لا توجد نتائج لهذا الرقم القومي.</p>";
-      return;
+    if(id.length !== 14 || isNaN(id)) {
+        resultDiv.innerHTML = lang === 'ar' ? 'الرقم القومي يجب أن يكون 14 رقم' : 'ID number must be 14 digits';
+        return;
     }
 
-    let table = `<table><tr><th>رقم الفحص</th><th>السنة</th><th>اسم مقدم الطلب</th></tr>`;
-    data.data.forEach(r => {
-      table += `<tr><td>${r.testNumber}</td><td>${r.year}</td><td>${r.name}</td></tr>`;
-    });
-    table += "</table>";
-    resultDiv.innerHTML = table;
+    // رابط Google Sheet بصيغة JSON
+    const sheetUrl = 'https://spreadsheets.google.com/feeds/list/YOUR_SHEET_ID/od6/public/values?alt=json';
 
-  } catch (err) {
-    console.error(err);
-    resultDiv.innerHTML = "<p>حدث خطأ أثناء البحث.</p>";
-  }
-});
+    try {
+        const res = await fetch(sheetUrl);
+        const data = await res.json();
+        const entries = data.feed.entry;
+
+        // البحث عن الرقم القومي في العمود C
+        const record = entries.find(e => e.gsx$c.$t === id);
+        if(record) {
+            const number = record.gsx$a.$t;
+            const year = record.gsx$b.$t;
+            const name = record.gsx$d.$t;
+
+            resultDiv.innerHTML = `
+                ${lang === 'ar' ? 'رقم الفحص' : 'Inspection Number'}: ${number}<br>
+                ${lang === 'ar' ? 'السنة' : 'Year'}: ${year}<br>
+                ${lang === 'ar' ? 'اسم مقدم الطلب' : 'Applicant Name'}: ${name}
+            `;
+        } else {
+            resultDiv.innerHTML = lang === 'ar' ? 'لا توجد نتائج لهذا الرقم' : 'No results found';
+        }
+
+    } catch(err) {
+        resultDiv.innerHTML = lang === 'ar' ? 'حدث خطأ أثناء جلب البيانات' : 'Error fetching data';
+        console.error(err);
+    }
+}
 </script>
 </body>
 </html>
