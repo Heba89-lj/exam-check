@@ -46,8 +46,16 @@ async function search() {
     }
 
     try {
-        const res = await fetch(`/api/id?id=${id}&lang=${lang}`);
-        const data = await res.json();
+        const res = await fetch(`/api/search?id=${id}&lang=${lang}`);
+
+        let data;
+        try {
+            data = await res.json();
+        } catch(e) {
+            resultDiv.innerHTML = lang==='ar' ? 'حدث خطأ في الاتصال بالسيرفر' : 'Server connection error';
+            console.error('Response not JSON', e, await res.text());
+            return;
+        }
 
         if(res.ok) {
             resultDiv.innerHTML = `
@@ -58,6 +66,7 @@ async function search() {
         } else {
             resultDiv.innerHTML = data.message;
         }
+
     } catch(err) {
         resultDiv.innerHTML = lang === 'ar' ? 'حدث خطأ أثناء جلب البيانات' : 'Error fetching data';
         console.error(err);
@@ -66,4 +75,3 @@ async function search() {
 </script>
 </body>
 </html>
-
