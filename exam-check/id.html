@@ -67,11 +67,13 @@ async function search() {
             }
         }
 
-    } catch(err) {
-        resultDiv.innerHTML = lang === 'ar' ? 'حدث خطأ أثناء جلب البيانات' : 'Error fetching data';
-        console.error(err);
-    }
+   catch(err) {
+  console.error('Sheets API error:', err.message, err.stack);
+  return res.status(500).json({ message: lang==='ar' ? 'خطأ في جلب البيانات من الشيت: '+err.message : 'Error fetching data from sheet: '+err.message });
+}
+
 }
 </script>
 </body>
 </html>
+
