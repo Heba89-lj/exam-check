@@ -293,7 +293,7 @@
     <div id="result"></div>
   </main>
 
-  <script>
+  <!-- <script>
     function normalizeNumber(str = "") {
       // تحويل الأرقام العربية إلى إنجليزية
       return str.replace(/[٠-٩]/g, d => "0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]).trim();
@@ -346,7 +346,53 @@
           resultDiv.innerHTML = "<p>حدث خطأ أثناء البحث.</p>";
         }
       });
-  </script>
+  </script> -->
+
+  <script>
+  function convertArabicNumbers(str) {
+    const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    return str.replace(/[٠-٩]/g, d => arabicNums.indexOf(d));
+  }
+
+  async function search() {
+    const nationalIdInput = document.getElementById('nationalId').value.trim();
+    const nationalId = convertArabicNumbers(nationalIdInput);
+
+    if (!nationalId) {
+      alert('من فضلك أدخل الرقم القومي');
+      return;
+    }
+
+    const res = await fetch(`/api/id?nationalId=${encodeURIComponent(nationalId)}`);
+    const json = await res.json();
+
+    console.log('API response:', json); // هتساعدك تتأكد من شكل البيانات الجاية
+
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = ''; // مسح النتائج السابقة
+
+    // تحقق إننا حصلنا على البيانات بشكل صحيح
+    if (!json.success || !json.data || json.data.length === 0) {
+      resultDiv.innerHTML = '<p>لا توجد نتائج لهذا الرقم القومي.</p>';
+      return;
+    }
+
+    // عرض البيانات
+    let table = `<table>
+      <tr><th>رقم الفحص</th><th>السنة</th><th>اسم مقدم الطلب</th></tr>`;
+    json.data.forEach(row => {
+      table += `<tr>
+        <td>${row.testNumber}</td>
+        <td>${row.year}</td>
+        <td>${row.name}</td>
+      </tr>`;
+    });
+    table += '</table>';
+    resultDiv.innerHTML = table;
+  }
+</script>
+
 </body>
+
 
 </html>
