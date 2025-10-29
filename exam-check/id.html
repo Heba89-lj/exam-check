@@ -46,25 +46,25 @@ async function search() {
     }
 
     try {
-        const res = await fetch(`/api/search?id=${id}&lang=${lang}`);
-
+        const res = await fetch(`/api/id?id=${id}&lang=${lang}`);
         let data;
-        try {
-            data = await res.json();
-        } catch(e) {
-            resultDiv.innerHTML = lang==='ar' ? 'حدث خطأ في الاتصال بالسيرفر' : 'Server connection error';
-            console.error('Response not JSON', e, await res.text());
-            return;
-        }
 
         if(res.ok) {
+            data = await res.json();
             resultDiv.innerHTML = `
                 ${lang === 'ar' ? 'رقم الفحص' : 'Inspection Number'}: ${data.number}<br>
                 ${lang === 'ar' ? 'السنة' : 'Year'}: ${data.year}<br>
                 ${lang === 'ar' ? 'اسم مقدم الطلب' : 'Applicant Name'}: ${data.name}
             `;
         } else {
-            resultDiv.innerHTML = data.message;
+            // محاولة قراءة JSON فقط إذا موجود، بدون إعادة قراءة body
+            try {
+                data = await res.json();
+                resultDiv.innerHTML = data.message;
+            } catch(e) {
+                resultDiv.innerHTML = lang==='ar' ? 'حدث خطأ في الاتصال بالسيرفر' : 'Server connection error';
+                console.error('Response not JSON', e);
+            }
         }
 
     } catch(err) {
