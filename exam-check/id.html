@@ -1,401 +1,73 @@
-<!-- <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>الاستعلام عن رقم الفحص</title>
-  <style>
-    body {
-      font-family: "Cairo", sans-serif;
-      background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-    }
-
-    header {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: #1a237e;
-      color: white;
-      text-align: center;
-      padding: 15px 0;
-      font-size: 1.4rem;
-      font-weight: bold;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    main {
-      margin-top: 90px;
-      width: 100%;
-      max-width: 400px;
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      padding: 25px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #2c3e50;
-      font-size: 1.5rem;
-      margin-bottom: 15px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      text-align: center;
-      transition: border-color 0.3s;
-    }
-
-    input:focus {
-      border-color: #1a237e;
-      outline: none;
-    }
-
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      background-color: #1a237e;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #283593;
-    }
-
-    #result {
-      margin-top: 25px;
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.05);
-      text-align: right;
-    }
-
-    #result h3 {
-      text-align: center;
-      color: #1a237e;
-    }
-
-    p {
-      margin: 8px 0;
-      font-size: 15px;
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 10px;
-      }
-
-      main {
-        padding: 20px 15px;
-      }
-
-      input, button {
-        font-size: 14px;
-        padding: 10px;
-      }
-
-      h1 {
-        font-size: 1.2rem;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header>وحدة الفحص المتنوع - النيابة العامة</header>
-
-  <main>
-    <h1>الاستعلام عن رقم الفحص</h1>
-    <input type="text" id="nationalId" placeholder="أدخل الرقم القومي" maxlength="14" inputmode="numeric" />
-    <button id="searchBtn">بحث</button>
-
-    <div id="result"></div>
-  </main>
-
-  <script>
-    document.getElementById("searchBtn").addEventListener("click", async () => {
-      const nationalId = document.getElementById("nationalId").value.trim();
-
-      if (!/^[0-9]{14}$/.test(nationalId)) {
-        alert("من فضلك أدخل الرقم القومي المكون من 14 رقمًا فقط بالأرقام العربية أو الإنجليزية.");
-        return;
-      }
-
-      document.getElementById("result").innerHTML = "جارٍ البحث...";
-
-      try {
-        const response = await fetch('/api/id?nationalId=${nationalId}');
-        const data = await response.json();
-
-        if (data.success) {
-          let html = "<h3>نتائج البحث:</h3>";
-          data.data.forEach((item) => {
-            html += `
-              <div>
-                <p><strong>رقم الفحص:</strong> ${item.testNumber}</p>
-                <p><strong>السنة:</strong> ${item.year}</p>
-                <p><strong>الاسم:</strong> ${item.name}</p>
-                <hr>
-              </div>
-            `;
-          });
-          document.getElementById("result").innerHTML = html;
-        } else {
-          document.getElementById("result").innerHTML = <p>${data.message}</p>;
-        }
-      } catch (err) {
-        document.getElementById("result").innerHTML = "<p>حدث خطأ أثناء البحث.</p>";
-      }
-    });
-  </script>
-</body>
-</html> -->
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>الاستعلام عن رقم الفحص</title>
-  <style>
-    body {
-      font-family: "Cairo", sans-serif;
-      background: #f0f0f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-    }
-
-    header {
-      width: 100%;
-      background: #1a237e;
-      color: white;
-      text-align: center;
-      padding: 15px 0;
-      font-size: 1.4rem;
-      font-weight: bold;
-      position: fixed;
-      top: 0;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    main {
-      margin-top: 90px;
-      width: 100%;
-      max-width: 450px;
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-
-    input,
-    button {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      font-size: 16px;
-      border-radius: 8px;
-    }
-
-    input {
-      border: 1px solid #ccc;
-      text-align: center;
-    }
-
-    input:focus {
-      border-color: #1a237e;
-      outline: none;
-    }
-
-    button {
-      background: #1a237e;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #283593;
-    }
-
-    #result {
-      margin-top: 20px;
-      text-align: right;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th,
-    td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: center;
-    }
-
-    th {
-      background: #1a237e;
-      color: white;
-    }
-
-    @media (max-width: 480px) {
-
-      input,
-      button {
-        font-size: 14px;
-        padding: 10px;
-      }
-
-      main {
-        padding: 15px;
-      }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>الاستعلام عن رقم الفحص</title>
+<style>
+body { font-family: "Cairo", sans-serif; background: #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; margin: 0; padding: 20px; }
+header { width: 100%; background: #1a237e; color: white; text-align: center; padding: 15px 0; font-size: 1.4rem; font-weight: bold; position: fixed; top: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+main { margin-top: 90px; width: 100%; max-width: 450px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.1); text-align: center; }
+input, button { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; border-radius: 8px; }
+input { border: 1px solid #ccc; text-align: center; }
+input:focus { border-color: #1a237e; outline: none; }
+button { background: #1a237e; color: white; border: none; cursor: pointer; transition: 0.3s; }
+button:hover { background: #283593; }
+#result { margin-top: 20px; text-align: right; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
+th { background: #1a237e; color: white; }
+@media (max-width: 480px) { input, button { font-size: 14px; padding: 10px; } main { padding: 15px; } }
+</style>
 </head>
-
 <body>
-  <header>وحدة الفحص المتنوع - النيابة العامة</header>
-  <main>
-    <h1>الاستعلام عن رقم الفحص</h1>
-    <input id="nationalId" placeholder="أدخل الرقم القومي" maxlength="14" inputmode="numeric">
-    <button id="searchBtn">بحث</button>
-    <div id="result"></div>
-  </main>
+<header>وحدة الفحص المتنوع - النيابة العامة</header>
+<main>
+<h1>الاستعلام عن رقم الفحص</h1>
+<input id="nationalId" placeholder="أدخل الرقم القومي" maxlength="14" inputmode="numeric">
+<button id="searchBtn">بحث</button>
+<div id="result"></div>
+</main>
 
-  <!-- <script>
-    function normalizeNumber(str = "") {
-      // تحويل الأرقام العربية إلى إنجليزية
-      return str.replace(/[٠-٩]/g, d => "0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]).trim();
-    }
+<script>
+function normalizeArabic(str = "") {
+  return str.replace(/[٠-٩]/g, d => "0123456789"["٠١٢٣٤٥٦٧٨٩".indexOf(d)]).trim();
+}
 
-    document.getElementById("searchBtn").addEventListener("click", async () => {
-      const input = document.getElementById("nationalId").value.trim();
-      const nationalId = normalizeNumber(input);
+document.getElementById("searchBtn").addEventListener("click", async () => {
+  const input = document.getElementById("nationalId").value.trim();
+  const nid = normalizeArabic(input);
 
-      if (!/^\d{14}$/.test(nationalId)) {
-        alert("من فضلك أدخل الرقم القومي المكون من 14 رقمًا فقط.");
-        return;
-      }
-
-      const resultDiv = document.getElementById("result");
-      resultDiv.innerHTML = "<p>جارٍ البحث...</p>";
-
-      try {
-        const res = await fetch(`/api/id?nationalId=${encodeURIComponent(nationalId)}`);
-        const data = await res.json();
-        console.log("API response:", data);
-
-        if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-          resultDiv.innerHTML = "<p>لا توجد نتائج لهذا الرقم القومي.</p>";
-          return;
-        }
-      
-        let table = `<table>
-          <tr>
-            <th>رقم الفحص</th>
-            <th>السنة</th>
-            <th>اسم مقدم الطلب</th>
-          </tr>`;
-
-
-        data.data.forEach(row => {
-          table += `<tr>
-            <td>${row.testNumber}</td>
-            <td>${row.year}</td>
-            <td>${row.name}</td>
-          </tr>`;
-        });
-
-    
-          table += `</table>`;
-          resultDiv.innerHTML = table;
-
-        } catch (err) {
-          console.error(err);
-          resultDiv.innerHTML = "<p>حدث خطأ أثناء البحث.</p>";
-        }
-      });
-  </script> -->
-
-  <script>
-  function convertArabicNumbers(str) {
-    const arabicNums = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-    return str.replace(/[٠-٩]/g, d => arabicNums.indexOf(d));
+  if (!/^\d{14}$/.test(nid)) {
+    alert("من فضلك أدخل الرقم القومي المكون من 14 رقمًا فقط.");
+    return;
   }
 
-  async function search() {
-    const nationalIdInput = document.getElementById('nationalId').value.trim();
-    const nationalId = convertArabicNumbers(nationalIdInput);
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerHTML = "<p>جارٍ البحث...</p>";
 
-    if (!nationalId) {
-      alert('من فضلك أدخل الرقم القومي');
+  try {
+    const res = await fetch(`/api/id?nationalId=${encodeURIComponent(nid)}`);
+    const data = await res.json();
+    console.log("API response:", data);
+
+    if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+      resultDiv.innerHTML = "<p>لا توجد نتائج لهذا الرقم القومي.</p>";
       return;
     }
 
-    const res = await fetch(`/api/id?nationalId=${encodeURIComponent(nationalId)}`);
-    const json = await res.json();
-
-    console.log('API response:', json); // هتساعدك تتأكد من شكل البيانات الجاية
-
-    const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = ''; // مسح النتائج السابقة
-
-    // تحقق إننا حصلنا على البيانات بشكل صحيح
-    if (!json.success || !json.data || json.data.length === 0) {
-      resultDiv.innerHTML = '<p>لا توجد نتائج لهذا الرقم القومي.</p>';
-      return;
-    }
-
-    // عرض البيانات
-    let table = `<table>
-      <tr><th>رقم الفحص</th><th>السنة</th><th>اسم مقدم الطلب</th></tr>`;
-    json.data.forEach(row => {
-      table += `<tr>
-        <td>${row.testNumber}</td>
-        <td>${row.year}</td>
-        <td>${row.name}</td>
-      </tr>`;
+    let table = `<table><tr><th>رقم الفحص</th><th>السنة</th><th>اسم مقدم الطلب</th></tr>`;
+    data.data.forEach(r => {
+      table += `<tr><td>${r.testNumber}</td><td>${r.year}</td><td>${r.name}</td></tr>`;
     });
-    table += '</table>';
+    table += "</table>";
     resultDiv.innerHTML = table;
+
+  } catch (err) {
+    console.error(err);
+    resultDiv.innerHTML = "<p>حدث خطأ أثناء البحث.</p>";
   }
-    document.getElementById("searchBtn").addEventListener("click", search);
-
+});
 </script>
-
 </body>
-
-
 </html>
-
