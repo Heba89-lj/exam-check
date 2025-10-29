@@ -35,8 +35,8 @@ function arabicToEnglishNumbers(str) {
 }
 
 async function search() {
-    let id = document.getElementById('idNumber').value.replace(/\s/g,''); // إزالة المسافات
-    id = arabicToEnglishNumbers(id); // تحويل أرقام عربية
+    let id = document.getElementById('idNumber').value.replace(/\s/g,'');
+    id = arabicToEnglishNumbers(id);
     const lang = document.getElementById('lang').value;
     const resultDiv = document.getElementById('result');
 
@@ -45,30 +45,19 @@ async function search() {
         return;
     }
 
-    // رابط Google Sheet بصيغة JSON
-    const sheetUrl = 'https://spreadsheets.google.com/feeds/list/YOUR_SHEET_ID/od6/public/values?alt=json';
-
     try {
-        const res = await fetch(sheetUrl);
+        const res = await fetch(`/api/search?id=${id}&lang=${lang}`);
         const data = await res.json();
-        const entries = data.feed.entry;
 
-        // البحث عن الرقم القومي في العمود C
-        const record = entries.find(e => e.gsx$c.$t === id);
-        if(record) {
-            const number = record.gsx$a.$t;
-            const year = record.gsx$b.$t;
-            const name = record.gsx$d.$t;
-
+        if(res.ok) {
             resultDiv.innerHTML = `
-                ${lang === 'ar' ? 'رقم الفحص' : 'Inspection Number'}: ${number}<br>
-                ${lang === 'ar' ? 'السنة' : 'Year'}: ${year}<br>
-                ${lang === 'ar' ? 'اسم مقدم الطلب' : 'Applicant Name'}: ${name}
+                ${lang === 'ar' ? 'رقم الفحص' : 'Inspection Number'}: ${data.number}<br>
+                ${lang === 'ar' ? 'السنة' : 'Year'}: ${data.year}<br>
+                ${lang === 'ar' ? 'اسم مقدم الطلب' : 'Applicant Name'}: ${data.name}
             `;
         } else {
-            resultDiv.innerHTML = lang === 'ar' ? 'لا توجد نتائج لهذا الرقم' : 'No results found';
+            resultDiv.innerHTML = data.message;
         }
-
     } catch(err) {
         resultDiv.innerHTML = lang === 'ar' ? 'حدث خطأ أثناء جلب البيانات' : 'Error fetching data';
         console.error(err);
