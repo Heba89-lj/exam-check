@@ -61,6 +61,8 @@
 //   }
 // }
 
+import { google } from "googleapis";
+
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method Not Allowed" });
@@ -72,31 +74,32 @@ export default async function handler(req, res) {
     return res.status(400).json({ success: false, message: "ادخلي رقم الفحص والسنة" });
   }
 
-  const sheetId = process.env.SHEET_ID;
-  const apiKey = process.env.GOOGLE_API_KEY;
-
   try {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1?key=${apiKey}`;
-    const response = await fetch(url);
-    const rawText = await response.text();
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        type: "service_account",
+        project_id: process.env.GOOGLE_PROJECT_ID,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      },
+      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    });
 
-    let data;
-    try {
-      data = JSON.parse(rawText);
-    } catch (e) {
-      return res.status(500).json({
-        success: false,
-        message: "رد غير صالح من Google Sheets",
-        details: rawText,
-      });
-    }
+    const sheets = google.sheets({ version: "v4", auth });
+    const sheetId = process.env.SHEET_ID;
 
-    const rows = data.values?.slice(1) || [];
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: "Sheet1",
+    });
 
-    // 🔍 البحث عن الصف المطابق (مع تجاهل الرقم القومي)
-    const match = rows.find((r) =>
-      r[0]?.toString().trim() === number.toString().trim() &&
-      r[1]?.toString().trim() === year.toString().trim()
+    const rows = response.data.values.slice(1); // تجاهل صف العناوين
+
+    // 🔍 البحث عن الصف المطابق
+    const match = rows.find(
+      (r) =>
+        r[0]?.toString().trim() === number.toString().trim() &&
+        r[1]?.toString().trim() === year.toString().trim()
     );
 
     if (match) {
