@@ -78,7 +78,7 @@ export default async function handler(req, res) {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         type: "service_account",
-        project_id: process.env.PROJECT_ID,
+        project_id: process.env.project_id,
         private_key: process.env.private_key.replace(/\\n/g, "\n"),
         client_email: process.env.client_email,
       },
@@ -127,5 +127,6 @@ export default async function handler(req, res) {
     });
   }
 }
+
 
 
