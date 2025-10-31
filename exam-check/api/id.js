@@ -1,44 +1,34 @@
 export default async function handler(req, res) {
-  const { number, year } = req.query;
-
-  if (!number || !year) {
-    return res.status(400).json({ success: false, message: "ادخلي رقم الفحص والسنة" });
-  }
-
-  const sheetId = process.env.SHEET_ID;
-  const apiKey = process.env.GOOGLE_API_KEY;
-
   try {
+    const { nationalId } = req.query;
+    if (!nationalId) {
+      return res.status(400).json({ error: "Missing national ID" });
+    }
+
+    const sheetId = process.env.SHEET_ID;
+    const apiKey = process.env.GOOGLE_API_KEY;
+
+    // جلب البيانات من Google Sheets العامة
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1?key=${apiKey}`;
     const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch sheet data");
+
     const data = await response.json();
+    const rows = data.values || [];
 
-    if (!data.values) return res.status(500).json({ success: false, message: "خطأ في الشيت" });
+    // البحث عن الصف المطابق للرقم القومي
+    const found = rows.find(row => row[2]?.toString().replace(/\s+/g,'') === nationalId.replace(/\s+/g,''));
+    if (!found) return res.status(404).json({ error: "No matching record for this national ID" });
 
-    const rows = data.values.slice(1); // تجاهل العناوين
-    const match = rows.find(
-      (r) => r[0]?.toString().trim() === number.toString().trim() &&
-             r[1]?.toString().trim() === year.toString().trim()
-    );
+    // تجهيز كل الأعمدة بالترتيب زي الشيت
+    const result = {};
+    rows[0].forEach((header, i) => {
+      result[header] = found[i] || "";
+    });
 
-    if (match) {
-      return res.status(200).json({
-        success: true,
-        result: {
-          number: match[0],
-          year: match[1],
-          caseNumber: match[2],
-          applicant: match[3],
-          status: match[4],
-          visa: match[5],
-          notes: match[6],
-        },
-      });
-    } else {
-      return res.status(404).json({ success: false, message: "لم يتم العثور على بيانات لهذا الفحص" });
-    }
+    return res.status(200).json(result);
   } catch (err) {
-    console.error("🔥 Error fetching Google Sheet:", err);
-    return res.status(500).json({ success: false, message: "حدث خطأ في السيرفر", error: err.message });
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
