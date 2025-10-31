@@ -2,34 +2,22 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>استعلام الرقم القومي</title>
+<title>استعلام رقم الفحص</title>
 <style>
-body { font-family: "Cairo", sans-serif; padding: 30px; background: #f5f5f5; }
-.container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-input, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
-button { cursor: pointer; background: #004aad; color: #fff; border: none; border-radius: 5px; }
-button:hover { background: #003580; }
-.table-wrapper { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-th { background: #004aad; color: white; }
-tr:nth-child(even) { background: #f9f9f9; }
+body { font-family: "Cairo", sans-serif; padding: 50px; background: #f5f5f5; direction: rtl; text-align: center; }
+.container { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+input, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; text-align: center; }
+button { cursor: pointer; background: #007bff; color: white; border: none; border-radius: 6px; }
+button:hover { background: #0056b3; }
+.result { margin-top: 20px; }
 </style>
 </head>
 <body>
 <div class="container">
-<h2>استعلام الرقم القومي</h2>
-<input type="text" id="idNumber" placeholder="ادخلي الرقم القومي 14 رقم">
-<button onclick="search()">بحث</button>
-
-<div class="table-wrapper">
-<table id="resultTable" style="display:none;">
-  <thead id="tableHead"></thead>
-  <tbody id="tableBody"></tbody>
-</table>
-</div>
-
-<p id="message" style="text-align:center; font-weight:bold;"></p>
+  <h2>استعلام رقم الفحص</h2>
+  <input type="text" id="idNumber" placeholder="ادخل الرقم القومي" maxlength="14" oninput="validateInput(this)">
+  <button onclick="search()">بحث</button>
+  <div class="result" id="result"></div>
 </div>
 
 <script>
@@ -42,47 +30,39 @@ function arabicToEnglishNumbers(str) {
   }).join('');
 }
 
+// 🔹 منع إدخال أي شيء غير أرقام (عربية أو إنجليزية) وعدم تجاوز 14 رقم
+function validateInput(input) {
+  input.value = input.value
+    .replace(/[^0-9٠-٩]/g, '') // السماح فقط بالأرقام
+    .slice(0, 14); // أقصى طول 14 رقم
+}
+
 async function search() {
-  const resultDiv = document.getElementById('message');
-  const table = document.getElementById('resultTable');
-  const tableHead = document.getElementById('tableHead');
-  const tableBody = document.getElementById('tableBody');
-
-  resultDiv.textContent = "";
-  table.style.display = "none";
-  tableHead.innerHTML = "";
-  tableBody.innerHTML = "";
-
+  const resultDiv = document.getElementById('result');
   let id = document.getElementById('idNumber').value.replace(/\s/g,'');
   id = arabicToEnglishNumbers(id);
 
-  if(id.length !== 14 || isNaN(id)) {
-    resultDiv.textContent = "الرقم القومي يجب أن يكون 14 رقم";
+  if (id.length !== 14 || isNaN(id)) {
+    resultDiv.textContent = "الرقم القومي يجب أن يكون 14 رقم بالضبط";
     return;
   }
 
   try {
     const res = await fetch(`/api/id?nationalId=${id}`);
-    let data;
+    const data = await res.json();
 
-    if(res.ok) {
-      data = await res.json();
-
-      // إنشاء الهيدر من أسماء الأعمدة
-      const headers = Object.keys(data);
-      tableHead.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
-
-      // إضافة القيم في نفس ترتيب الأعمدة
-      tableBody.innerHTML = "<tr>" + headers.map(h => `<td>${data[h]}</td>`).join("") + "</tr>";
-
-      table.style.display = "table";
+    if (res.ok) {
+      let html = "<table border='1' style='margin:auto; border-collapse:collapse;'>";
+      html += "<tr>" + Object.keys(data).map(k => `<th>${k}</th>`).join('') + "</tr>";
+      html += "<tr>" + Object.values(data).map(v => `<td>${v}</td>`).join('') + "</tr>";
+      html += "</table>";
+      resultDiv.innerHTML = html;
     } else {
-      data = await res.json();
       resultDiv.textContent = data.error || "لم يتم العثور على بيانات";
     }
-  } catch(err) {
-    console.error(err);
+  } catch (e) {
     resultDiv.textContent = "حدث خطأ أثناء البحث";
+    console.error(e);
   }
 }
 </script>
