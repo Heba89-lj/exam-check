@@ -1,65 +1,46 @@
-import { google } from "googleapis";
-
 export default async function handler(req, res) {
   try {
-    // 🔹 استخراج الرقم القومي من الرابط (query string)
     const { nationalId } = req.query;
     if (!nationalId) {
       return res.status(400).json({ error: "Missing national ID" });
     }
 
-    // 🔹 قراءة بيانات الحساب السري من متغير البيئة
-    const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT);
+    const sheetId = process.env.SHEET_ID; // ضيفي الـ ID بتاع الشيت هنا في Vercel
 
-    // 🔹 إنشاء اتصال آمن بـ Google Sheets
-    const auth = new google.auth.GoogleAuth({
-      credentials: serviceAccount,
-      scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-    });
+    // 🔹 قراءة البيانات من Google Sheets العامة (بدون خدمة)
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
 
-    const sheets = google.sheets({ version: "v4", auth });
+    const response = await fetch(url);
+    const text = await response.text();
 
-    // 🔹 تحديد الـ Sheet ID
-    const spreadsheetId = process.env.SHEET_ID; // ضيفي SHEET_ID في Vercel
+    // 🔹 تحويل البيانات من JSON خاص بجوجل إلى كائن عادي
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows.map((r) => r.c.map((c) => c?.v || ""));
 
-    // 🔹 قراءة البيانات من الشيت (الصفوف)
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: "Sheet1!A:D", // العمود A إلى D
-    });
-
-    const rows = response.data.values;
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({ error: "No data found" });
-    }
-
-    // 🔹 البحث عن الصف اللي فيه الرقم القومي
+    // 🔹 البحث عن الرقم القومي
     const found = rows.find(
-      (row) => row[2]?.replace(/\s+/g, "") === nationalId.replace(/\s+/g, "")
+      (row) => row[2]?.toString().replace(/\s+/g, "") === nationalId.replace(/\s+/g, "")
     );
 
     if (!found) {
-      return res
-        .status(404)
-        .json({ error: "No matching record for this national ID" });
+      return res.status(404).json({ error: "No matching record for this national ID" });
     }
 
-    // 🔹 تجهيز النتيجة (A=رقم الفحص, B=السنة, C=الرقم القومي, D=اسم مقدم الطلب)
+    // 🔹 تجهيز النتيجة
     const result = {
       examNumber: found[0] || "",
       year: found[1] || "",
       nationalId: found[2] || "",
-      applicant: found[4] || "",
+      applicant: found[3] || "",
     };
-
-    console.log("✅ Found record:", result);
 
     return res.status(200).json(result);
   } catch (err) {
-    console.error("❌ Server error:", err);
+    console.error("❌ Error:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 }
+
 
 // import { google } from "googleapis";
 
@@ -127,6 +108,7 @@ export default async function handler(req, res) {
 //     });
 //   }
 // }
+
 
 
 
