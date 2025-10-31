@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     const matches = rows.filter(row => row[2] === id);
 
     // رجّع الأعمدة المطلوبة فقط (رقم الفحص - السنة - اسم مقدم الطلب)
-    const result = matches.map(row => [row[0], row[1], row[3]]);
+    const result = matches.map(row => [row[0], row[1], row[4]]);
 
     res.status(200).json(result);
   } catch (error) {
@@ -31,3 +31,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "Error fetching data" });
   }
 }
+
