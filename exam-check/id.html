@@ -46,7 +46,7 @@ async function search() {
             return;
         }
 
-        const res = await fetch(`/api/id?id=${id}&lang=${lang}`);
+const res = await fetch(`/api/id?nationalId=${id}&lang=${lang}`);
         let data;
 
         if(res.ok) {
@@ -256,3 +256,4 @@ async function search() {
 </html>
 
  -->
+
