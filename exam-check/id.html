@@ -146,7 +146,7 @@
       }
 
       try {
-        const response = await fetch(`/api/search?number=${encodeURIComponent(number)}&year=${encodeURIComponent(year)}`);
+        const response = await fetch(`/api/id?number=${encodeURIComponent(number)}&year=${encodeURIComponent(year)}`);
         const data = await response.json();
 
         if (data.success) {
@@ -175,3 +175,4 @@
 </body>
 
 </html>
+
