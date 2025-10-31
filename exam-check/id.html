@@ -129,52 +129,53 @@
   </div>
 
   <script>
-    async function searchData() {
-      const number = document.getElementById("number").value.trim();
-      const year = document.getElementById("year").value.trim();
-      const message = document.getElementById("message");
-      const table = document.getElementById("resultTable");
-      const body = document.getElementById("resultBody");
+   async function searchData() {
+  const number = document.getElementById("number").value.trim();
+  const year = document.getElementById("year").value.trim();
+  const message = document.getElementById("message");
+  const table = document.getElementById("resultTable");
+  const body = document.getElementById("resultBody");
 
-      message.textContent = "";
-      table.style.display = "none";
-      body.innerHTML = "";
+  message.textContent = "";
+  table.style.display = "none";
+  body.innerHTML = "";
 
-      if (!number || !year) {
-        message.textContent = "من فضلك أدخلي رقم الفحص والسنة.";
-        return;
-      }
+  if (!number || !year) {
+    message.textContent = "من فضلك أدخلي رقم الفحص والسنة.";
+    return;
+  }
 
-      try {
-        const response = await fetch(`/api/id?number=${encodeURIComponent(number)}&year=${encodeURIComponent(year)}`);
-        const data = await response.json();
+  try {
+    const response = await fetch(`/api/id?number=${encodeURIComponent(number)}&year=${encodeURIComponent(year)}`);
+    const data = await response.json();
 
-        if (data.success) {
-          const r = data.result;
-          const row = `
-            <tr>
-              <td>${r.number}</td>
-              <td>${r.year}</td>
-              <td>${r.caseNumber}</td>
-              <td>${r.applicant}</td>
-              <td>${r.status}</td>
-              <td>${r.visa}</td>
-              <td>${r.notes}</td>
-            </tr>`;
-          body.innerHTML = row;
-          table.style.display = "table";
-        } else {
-          message.textContent = data.message || "لم يتم العثور على بيانات.";
-        }
-      } catch (err) {
-        console.error(err);
-        message.textContent = "حدث خطأ أثناء البحث.";
-      }
+    if (data.success) {
+      const r = data.result;
+      body.innerHTML = `
+        <tr>
+          <td>${r.number}</td>
+          <td>${r.year}</td>
+          <td>${r.caseNumber}</td>
+          <td>${r.applicant}</td>
+          <td>${r.status}</td>
+          <td>${r.visa}</td>
+          <td>${r.notes}</td>
+        </tr>`;
+      table.style.display = "table";
+    } else {
+      message.textContent = data.message || "لم يتم العثور على بيانات.";
     }
+  } catch (err) {
+    console.error(err);
+    message.textContent = "حدث خطأ أثناء البحث.";
+  }
+}
+
   </script>
 </body>
 
 </html>
+
 
 
 
