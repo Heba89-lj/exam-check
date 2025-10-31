@@ -1,34 +1,33 @@
+import fetch from "node-fetch";
+
 export default async function handler(req, res) {
+  const { id } = req.query;
+  const sheetId = process.env.SHEET_ID;
+  const apiKey = process.env.GOOGLE_API_KEY;
+
+  if (!sheetId || !apiKey) {
+    return res.status(500).json({ error: "API key or Sheet ID missing" });
+  }
+
   try {
-    const { nationalId } = req.query;
-    if (!nationalId) {
-      return res.status(400).json({ error: "Missing national ID" });
-    }
-
-    const sheetId = process.env.SHEET_ID;
-    const apiKey = process.env.GOOGLE_API_KEY;
-
-    // جلب البيانات من Google Sheets العامة
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1?key=${apiKey}`;
     const response = await fetch(url);
-    if (!response.ok) throw new Error("Failed to fetch sheet data");
-
     const data = await response.json();
-    const rows = data.values || [];
 
-    // البحث عن الصف المطابق للرقم القومي
-    const found = rows.find(row => row[2]?.toString().replace(/\s+/g,'') === nationalId.replace(/\s+/g,''));
-    if (!found) return res.status(404).json({ error: "No matching record for this national ID" });
+    if (!data.values) return res.status(404).json([]);
 
-    // تجهيز كل الأعمدة بالترتيب زي الشيت
-    const result = {};
-    rows[0].forEach((header, i) => {
-      result[header] = found[i] || "";
-    });
+    // إزالة صف العناوين
+    const rows = data.values.slice(1);
 
-    return res.status(200).json(result);
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Internal server error" });
+    // البحث عن الصفوف اللي تحتوي على الرقم القومي
+    const matches = rows.filter(row => row[2] === id);
+
+    // رجّع الأعمدة المطلوبة فقط (رقم الفحص - السنة - اسم مقدم الطلب)
+    const result = matches.map(row => [row[0], row[1], row[3]]);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching data" });
   }
 }
