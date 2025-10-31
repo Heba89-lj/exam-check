@@ -1,82 +1,177 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>استعلام رقم الفحص</title>
-<style>
-body { font-family: "Cairo", sans-serif; background: #f5f5f5; padding: 50px; }
-.container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-input, select, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; }
-button { cursor: pointer; background: #004aad; color: white; border: none; border-radius: 6px; transition: 0.3s; }
-button:hover { background: #003580; }
-.result { margin-top: 20px; font-weight: bold; text-align: center; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الاستعلام عن نتيجة الفحص</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      direction: rtl;
+      background: linear-gradient(135deg, #f2f6fc, #dce3f0);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 100px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #004aad;
+      margin-bottom: 25px;
+      font-weight: bold;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 20px;
+      font-size: 16px;
+      text-align: right;
+    }
+
+    button {
+      background: #004aad;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #003580;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+      text-align: center;
+      min-width: 500px;
+    }
+  .table-wrapper{
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+  }
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+
+    th {
+      background: #004aad;
+      color: white;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="container">
-  <h2>استعلام رقم الفحص</h2>
-  <input type="text" id="idNumber" placeholder="ادخل الرقم القومي" maxlength="14">
-  <select id="lang">
-      <option value="ar">العربية</option>
-      <option value="en">English</option>
-  </select>
-  <button onclick="search()">بحث</button>
-  <div class="result" id="result"></div>
-</div>
+  <div class="container">
+    <h1>الاستعلام عن نتيجة الفحص</h1>
 
-<script>
-// تحويل الأرقام العربية للإنجليزية
-function arabicToEnglishNumbers(str) {
-    const arabic = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-    const english = ['0','1','2','3','4','5','6','7','8','9'];
-    return str.split('').map(c => {
-        const index = arabic.indexOf(c);
-        return index > -1 ? english[index] : c;
-    }).join('');
-}
+    <label for="number">رقم الفحص:</label>
+    <input type="text" id="number" placeholder="أدخل رقم الفحص" inputmode="numeric" />
 
-async function search() {
-    const resultDiv = document.getElementById('result');
-    let id = document.getElementById('idNumber').value.replace(/\s/g,'');
-    id = arabicToEnglishNumbers(id);
-    const lang = document.getElementById('lang').value;
+    <label for="year">السنة:</label>
+    <input type="text" id="year" placeholder="أدخل السنة" inputmode="numeric" />
 
-    resultDiv.textContent = "";
+    <button onclick="searchData()">بحث</button>
 
-    if(id.length !== 14 || isNaN(id)) {
-        resultDiv.textContent = lang==='ar' ? 'الرقم القومي يجب أن يكون 14 رقم' : 'ID number must be 14 digits';
+   <div class="table-wrapper">
+ <table id="resultTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>رقم الفحص</th>
+          <th>السنة</th>
+          <th>رقم القضية</th>
+          <th>اسم مقدم الطلب</th>
+          <th>حالة الفحص</th>
+          <th>
+            ماتم فى الفحص</th>
+          <th>ملاحظات</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+
+   </div>
+    <p id="message" style="text-align:center; margin-top:20px; font-weight:bold;"></p>
+  </div>
+
+  <script>
+    async function searchData() {
+      const number = document.getElementById("number").value.trim();
+      const year = document.getElementById("year").value.trim();
+      const message = document.getElementById("message");
+      const table = document.getElementById("resultTable");
+      const body = document.getElementById("resultBody");
+
+      message.textContent = "";
+      table.style.display = "none";
+      body.innerHTML = "";
+
+      if (!number || !year) {
+        message.textContent = "من فضلك أدخلي رقم الفحص والسنة.";
         return;
-    }
+      }
 
-    try {
-        // هنا الطلب بيروح للسيرفر فقط
-        const res = await fetch(`/api/id?nationalId=${id}&lang=${lang}`);
-        let data;
+      try {
+        const response = await fetch(`/api/search?number=${encodeURIComponent(number)}&year=${encodeURIComponent(year)}`);
+        const data = await response.json();
 
-        if(res.ok) {
-            data = await res.json();
-            resultDiv.innerHTML = `
-                ${lang==='ar' ? 'رقم الفحص' : 'Inspection Number'}: ${data.examNumber}<br>
-                ${lang==='ar' ? 'السنة' : 'Year'}: ${data.year}<br>
-                ${lang==='ar' ? 'اسم مقدم الطلب' : 'Applicant Name'}: ${data.applicant}
-            `;
+        if (data.success) {
+          const r = data.result;
+          const row = `
+            <tr>
+              <td>${r.number}</td>
+              <td>${r.year}</td>
+              <td>${r.caseNumber}</td>
+              <td>${r.applicant}</td>
+              <td>${r.status}</td>
+              <td>${r.visa}</td>
+              <td>${r.notes}</td>
+            </tr>`;
+          body.innerHTML = row;
+          table.style.display = "table";
         } else {
-            try {
-                data = await res.json();
-                resultDiv.textContent = data.error || (lang==='ar' ? 'لم يتم العثور على بيانات' : 'No data found');
-            } catch(e) {
-                resultDiv.textContent = lang==='ar' ? 'حدث خطأ في الاتصال بالسيرفر' : 'Server connection error';
-                console.error('Response not JSON', e);
-            }
+          message.textContent = data.message || "لم يتم العثور على بيانات.";
         }
-    } catch(err) {
-        resultDiv.textContent = lang==='ar' ? 'حدث خطأ أثناء جلب البيانات' : 'Error fetching data';
+      } catch (err) {
         console.error(err);
+        message.textContent = "حدث خطأ أثناء البحث.";
+      }
     }
-}
-</script>
-
+  </script>
 </body>
+
 </html>
