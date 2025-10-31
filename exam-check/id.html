@@ -1,70 +1,115 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>استعلام رقم الفحص</title>
-<style>
-body { font-family: "Cairo", sans-serif; padding: 50px; background: #f5f5f5; direction: rtl; text-align: center; }
-.container { max-width: 400px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-input, button { width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; text-align: center; }
-button { cursor: pointer; background: #007bff; color: white; border: none; border-radius: 6px; }
-button:hover { background: #0056b3; }
-.result { margin-top: 20px; }
-</style>
+  <meta charset="UTF-8">
+  <title>بحث بالرقم القومي</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 40px;
+    }
+    input {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: #fff;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 30px;
+      text-align: center;
+      direction: rtl;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 60%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <h2>استعلام رقم الفحص</h2>
-  <input type="text" id="idNumber" placeholder="ادخل الرقم القومي" maxlength="14" oninput="validateInput(this)">
-  <button onclick="search()">بحث</button>
-  <div class="result" id="result"></div>
-</div>
 
-<script>
-function arabicToEnglishNumbers(str) {
-  const arabic = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-  const english = ['0','1','2','3','4','5','6','7','8','9'];
-  return str.split('').map(c => {
-    const index = arabic.indexOf(c);
-    return index > -1 ? english[index] : c;
-  }).join('');
-}
+  <h2>بحث بالرقم القومي</h2>
+  <input type="text" id="nationalId" placeholder="أدخل الرقم القومي المكون من 14 رقمًا" maxlength="14" />
+  <button onclick="searchById()">بحث</button>
 
-// 🔹 منع إدخال أي شيء غير أرقام (عربية أو إنجليزية) وعدم تجاوز 14 رقم
-function validateInput(input) {
-  input.value = input.value
-    .replace(/[^0-9٠-٩]/g, '') // السماح فقط بالأرقام
-    .slice(0, 14); // أقصى طول 14 رقم
-}
+  <div id="result"></div>
 
-async function search() {
-  const resultDiv = document.getElementById('result');
-  let id = document.getElementById('idNumber').value.replace(/\s/g,'');
-  id = arabicToEnglishNumbers(id);
+  <script>
+    async function searchById() {
+      const id = document.getElementById("nationalId").value.trim();
+      const resultDiv = document.getElementById("result");
 
-  if (id.length !== 14 || isNaN(id)) {
-    resultDiv.textContent = "الرقم القومي يجب أن يكون 14 رقم بالضبط";
-    return;
-  }
+      // ✅ التحقق من أن الرقم القومي 14 رقم بالضبط
+      if (!/^\d{14}$/.test(id)) {
+        resultDiv.innerHTML = "<p style='color:red'>الرقم القومي يجب أن يكون 14 رقمًا فقط.</p>";
+        return;
+      }
 
-  try {
-    const res = await fetch(`/api/id?nationalId=${id}`);
-    const data = await res.json();
+      resultDiv.innerHTML = "<p>جارٍ البحث...</p>";
 
-    if (res.ok) {
-      let html = "<table border='1' style='margin:auto; border-collapse:collapse;'>";
-      html += "<tr>" + Object.keys(data).map(k => `<th>${k}</th>`).join('') + "</tr>";
-      html += "<tr>" + Object.values(data).map(v => `<td>${v}</td>`).join('') + "</tr>";
-      html += "</table>";
-      resultDiv.innerHTML = html;
-    } else {
-      resultDiv.textContent = data.error || "لم يتم العثور على بيانات";
+      try {
+        const response = await fetch(`/api/search?id=${id}`);
+        const data = await response.json();
+
+        if (data.length === 0) {
+          resultDiv.innerHTML = "<p style='color:red'>لا توجد بيانات لهذا الرقم القومي.</p>";
+        } else {
+          let table = `
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الفحص</th>
+                  <th>السنة</th>
+                  <th>اسم مقدم الطلب</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.forEach(row => {
+            table += `
+              <tr>
+                <td>${row[0] || ""}</td>
+                <td>${row[1] || ""}</td>
+                <td>${row[3] || ""}</td>
+              </tr>
+            `;
+          });
+
+          table += "</tbody></table>";
+          resultDiv.innerHTML = table;
+        }
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = "<p style='color:red'>حدث خطأ أثناء البحث.</p>";
+      }
     }
-  } catch (e) {
-    resultDiv.textContent = "حدث خطأ أثناء البحث";
-    console.error(e);
-  }
-}
-</script>
+  </script>
 </body>
 </html>
