@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const rows = data.values.slice(1);
 
     // البحث عن الصفوف اللي تحتوي على الرقم القومي
-    const matches = rows.filter(row => row[2] === id);
+    const matches = rows.filter(row => row[2] && row[2].trim() === id.trim());
 
     // رجّع الأعمدة المطلوبة فقط (رقم الفحص - السنة - اسم مقدم الطلب)
     const result = matches.map(row => [row[0], row[1], row[4]]);
@@ -32,5 +32,6 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "Error fetching data" });
   }
 }
+
 
 
