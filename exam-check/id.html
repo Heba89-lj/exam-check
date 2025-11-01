@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>بحث بالرقم القومي</title>
+  <title>الاستعلام عن رقم الفحص</title>
   <style>
     body {
       font-family: "Cairo", sans-serif;
@@ -50,11 +50,36 @@
       background-color: #007bff;
       color: white;
     }
+    
+    /* ✅ جعل الجدول متجاوب على الشاشات الصغيرة */
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      input, button {
+        font-size: 15px;
+        padding: 10px;
+      }
+
+      table {
+        width: 100%;
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <h2>بحث بالرقم القومي</h2>
+  <h2>للاستعلام عن رقم الفحص</h2>
   <input type="text" id="nationalId" placeholder="أدخل الرقم القومي المكون من 14 رقمًا" maxlength="14" />
   <button onclick="searchById()">بحث</button>
 
@@ -114,6 +139,7 @@
   </script>
 </body>
 </html>
+
 
 
 
