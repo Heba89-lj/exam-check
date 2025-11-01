@@ -9,6 +9,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "API key or Sheet ID missing" });
   }
 
+  
   try {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1?key=${apiKey}`;
     const response = await fetch(url);
@@ -31,4 +32,5 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "Error fetching data" });
   }
 }
+
 
