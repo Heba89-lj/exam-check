@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -143,4 +143,178 @@
 
 
 
+
+ -->
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>الاستعلام عن رقم الفحص</title>
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 40px;
+    }
+    input, select {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: #fff;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 30px;
+      text-align: center;
+      direction: rtl;
+    }
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 60%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    /* متجاوب */
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+      input, button, select {
+        width: 100%;
+        font-size: 15px;
+      }
+      table {
+        width: 100%;
+        font-size: 14px;
+      }
+      th, td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>للاستعلام عن رقم الفحص</h2>
+
+  <!-- ✔ Dropdown جديد -->
+  <select id="searchType">
+    <option value="national">الرقم القومي</option>
+    <option value="passport">جواز السفر</option>
+  </select>
+
+  <input type="text" id="nationalId" placeholder="أدخل الرقم" />
+  <button onclick="searchById()">بحث</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function searchById() {
+      const id = document.getElementById("nationalId").value.trim();
+      const type = document.getElementById("searchType").value;
+      const resultDiv = document.getElementById("result");
+
+      resultDiv.innerHTML = "";
+
+      // لو فاضي
+      if (id === "") {
+        resultDiv.innerHTML = "<p style='color:red'>برجاء إدخال البيانات المطلوبة.</p>";
+        return;
+      }
+
+      // ------------------------------------------------------
+      // ✔ التحقق حسب نوع البحث
+      // ------------------------------------------------------
+
+      if (type === "national") {
+        // ✔ الرقم القومي = 14 رقم فقط
+        if (!/^\d{14}$/.test(id)) {
+          resultDiv.innerHTML =
+            "<p style='color:red'>الرقم القومي يجب أن يكون 14 رقمًا فقط.</p>";
+          return;
+        }
+      }
+
+      if (type === "passport") {
+        // ✔ جواز سفر = حروف + أرقام بدون مسافات
+        if (!/^[A-Za-z0-9]+$/.test(id)) {
+          resultDiv.innerHTML =
+            "<p style='color:red'>رقم جواز السفر يجب أن يحتوي على حروف وأرقام فقط بدون مسافات.</p>";
+          return;
+        }
+      }
+
+      resultDiv.innerHTML = "<p>جارٍ البحث...</p>";
+
+      try {
+        const response = await fetch(`/api/id?id=${id}`);
+        const data = await response.json();
+
+        if (data.length === 0) {
+          resultDiv.innerHTML = "<p style='color:red'>لا توجد بيانات لهذا الرقم.</p>";
+        } else {
+          let table = `
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الفحص</th>
+                  <th>السنة</th>
+                  <th>اسم مقدم الطلب</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.forEach(row => {
+            table += `
+              <tr>
+                <td>${row[0] || ""}</td>
+                <td>${row[1] || ""}</td>
+                <td>${row[2] || ""}</td>
+              </tr>
+            `;
+          });
+
+          table += "</tbody></table>";
+          resultDiv.innerHTML = table;
+        }
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = "<p style='color:red'>حدث خطأ أثناء البحث.</p>";
+      }
+    }
+  </script>
+</body>
+</html>
 
