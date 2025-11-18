@@ -232,9 +232,9 @@
 
 <body>
 
-  <h2>للاستعلام عن رقم الفحص</h2>
+  <h2>الاستعلام عن رقم الفحص</h2>
 
-  <!-- 🔽 Dropdown لاختيار نوع البحث -->
+  <!-- Dropdown لاختيار نوع البحث -->
   <select id="searchType" onchange="changePlaceholder()">
     <option value="national">الرقم القومي</option>
     <option value="passport">جواز السفر</option>
@@ -249,8 +249,7 @@
   <div id="result"></div>
 
   <script>
-
-    // 🔽 تغيير placeholder + الشروط حسب الاختيار
+    // تغيير placeholder + إعدادات الإدخال حسب الاختيار
     function changePlaceholder() {
       const type = document.getElementById("searchType").value;
       const input = document.getElementById("searchInput");
@@ -268,21 +267,21 @@
       }
     }
 
-    // 🔍 البحث الفعلي
+    // البحث
     async function searchById() {
       const type = document.getElementById("searchType").value;
       const id = document.getElementById("searchInput").value.trim();
       const resultDiv = document.getElementById("result");
 
-      // 🔴 الرقم القومي: تحقق من 14 رقم
+      // التحقق من الرقم القومي
       if (type === "national" && !/^\d{14}$/.test(id)) {
         resultDiv.innerHTML = "<p style='color:red'>الرقم القومي يجب أن يكون 14 رقمًا فقط.</p>";
         return;
       }
 
-      // 🔴 جواز السفر: يسمح بحروف + أرقام + شرط لا يقل عن 5 ولا يزيد عن 15
-      if (type === "passport" && !/^[A-Za-z0-9]{5,15}$/.test(id)) {
-        resultDiv.innerHTML = "<p style='color:red'>رقم جواز السفر يجب أن يكون من 5 إلى 15 حرفًا أو رقمًا.</p>";
+      // التحقق من جواز السفر: يجب أن يحتوي على حرف واحد + رقم واحد على الأقل
+      if (type === "passport" && !/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]{5,15}$/.test(id)) {
+        resultDiv.innerHTML = "<p style='color:red'>رقم جواز السفر يجب أن يحتوي على حرف واحد على الأقل ورقم واحد، وطوله من 5 إلى 15 خانة.</p>";
         return;
       }
 
