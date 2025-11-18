@@ -157,151 +157,176 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <title>الاستعلام عن رقم الفحص</title>
+  <meta charset="UTF-8">
+  <title>الاستعلام عن رقم الفحص</title>
 
-    <style>
-        body {
-            font-family: "Cairo", sans-serif;
-            background: #f9f9f9;
-            text-align: center;
-            padding: 40px;
-        }
-        select, input {
-            padding: 10px;
-            width: 260px;
-            font-size: 16px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            text-align: center;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin-top: 10px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            background-color: #007bff;
-            color: #fff;
-        }
-        #result { margin-top: 30px; }
+  <style>
+    body {
+      font-family: "Cairo", sans-serif;
+      background: #f9f9f9;
+      text-align: center;
+      padding: 40px;
+    }
 
-        table {
-            margin: 0 auto;
-            border-collapse: collapse;
-            width: 60%;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #007bff;
-            color: white;
-        }
+    input, select {
+      padding: 10px;
+      width: 260px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+      margin: 5px 0;
+    }
 
-        @media (max-width: 600px) {
-            input, select, button { width: 100%; }
-            table { width: 100%; }
-        }
-    </style>
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #result {
+      margin-top: 30px;
+      text-align: center;
+      direction: rtl;
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 60%;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      input, select, button {
+        width: 100%;
+        font-size: 15px;
+      }
+
+      table {
+        width: 100%;
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-    <h2>الاستعلام عن رقم الفحص</h2>
+  <h2>للاستعلام عن رقم الفحص</h2>
 
-    <!-- 🔹 DROPDOWN -->
-    <select id="typeSelect" onchange="changePlaceholder()">
-        <option value="national">الرقم القومي</option>
-        <option value="passport">جواز السفر</option>
-    </select>
+  <!-- 🔽 Dropdown لاختيار نوع البحث -->
+  <select id="searchType" onchange="changePlaceholder()">
+    <option value="national">الرقم القومي</option>
+    <option value="passport">جواز السفر</option>
+  </select>
 
-    <!-- 🔹 INPUT -->
-    <input type="text" id="nationalId" placeholder="أدخل الرقم القومي المكون من 14 رقمًا" />
+  <!-- مربع البحث -->
+  <input type="text" id="searchInput" placeholder="أدخل الرقم القومي المكون من 14 رقمًا"
+         maxlength="14" inputmode="numeric" />
 
-    <button onclick="searchById()">بحث</button>
+  <button onclick="searchById()">بحث</button>
 
-    <div id="result"></div>
+  <div id="result"></div>
 
-    <script>
-        // تغيير البليس هولدر حسب الاختيار
-        function changePlaceholder() {
-            const type = document.getElementById("typeSelect").value;
-            const input = document.getElementById("nationalId");
+  <script>
 
-            if (type === "national") {
-                input.placeholder = "أدخل الرقم القومي المكون من 14 رقمًا";
-                input.value = "";
-                input.maxLength = 14;
-            } else {
-                input.placeholder = "أدخل رقم جواز السفر";
-                input.value = "";
-                input.maxLength = 15;
-            }
+    // 🔽 تغيير placeholder + الشروط حسب الاختيار
+    function changePlaceholder() {
+      const type = document.getElementById("searchType").value;
+      const input = document.getElementById("searchInput");
+
+      if (type === "national") {
+        input.placeholder = "أدخل الرقم القومي المكون من 14 رقمًا";
+        input.value = "";
+        input.maxLength = 14;
+        input.setAttribute("inputmode", "numeric");  // لوحة أرقام فقط
+      } else {
+        input.placeholder = "أدخل رقم جواز السفر";
+        input.value = "";
+        input.maxLength = 15;
+        input.setAttribute("inputmode", "text");     // لوحة حروف + أرقام
+      }
+    }
+
+    // 🔍 البحث الفعلي
+    async function searchById() {
+      const type = document.getElementById("searchType").value;
+      const id = document.getElementById("searchInput").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      // 🔴 الرقم القومي: تحقق من 14 رقم
+      if (type === "national" && !/^\d{14}$/.test(id)) {
+        resultDiv.innerHTML = "<p style='color:red'>الرقم القومي يجب أن يكون 14 رقمًا فقط.</p>";
+        return;
+      }
+
+      // 🔴 جواز السفر: يسمح بحروف + أرقام + شرط لا يقل عن 5 ولا يزيد عن 15
+      if (type === "passport" && !/^[A-Za-z0-9]{5,15}$/.test(id)) {
+        resultDiv.innerHTML = "<p style='color:red'>رقم جواز السفر يجب أن يكون من 5 إلى 15 حرفًا أو رقمًا.</p>";
+        return;
+      }
+
+      resultDiv.innerHTML = "<p>جارٍ البحث...</p>";
+
+      try {
+        const response = await fetch(`/api/id?id=${id}`);
+        const data = await response.json();
+
+        if (data.length === 0) {
+          resultDiv.innerHTML = "<p style='color:red'>لا توجد بيانات لهذا الرقم.</p>";
+        } else {
+          let table = `
+            <table>
+              <thead>
+                <tr>
+                  <th>رقم الفحص</th>
+                  <th>السنة</th>
+                  <th>اسم مقدم الطلب</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.forEach(row => {
+            table += `
+              <tr>
+                <td>${row[0] || ""}</td>
+                <td>${row[1] || ""}</td>
+                <td>${row[2] || ""}</td>
+              </tr>
+            `;
+          });
+
+          table += "</tbody></table>";
+          resultDiv.innerHTML = table;
         }
 
-        async function searchById() {
-            const id = document.getElementById("nationalId").value.trim();
-            const type = document.getElementById("typeSelect").value;
-            const resultDiv = document.getElementById("result");
-
-            // التحقق حسب النوع المختار
-            if (type === "national") {
-                if (!/^\d{14}$/.test(id)) {
-                    resultDiv.innerHTML = "<p style='color:red'>الرقم القومي يجب أن يكون 14 رقمًا.</p>";
-                    return;
-                }
-            } else {
-                if (!/^[A-Za-z0-9]{8,15}$/.test(id)) {
-                    resultDiv.innerHTML = "<p style='color:red'>رقم جواز السفر يجب أن يكون بين 8 و15 ويتكون من حروف وأرقام فقط.</p>";
-                    return;
-                }
-            }
-
-            resultDiv.innerHTML = "<p>جارٍ البحث...</p>";
-
-            try {
-                const response = await fetch(`/api/id?id=${id}`);
-                const data = await response.json();
-
-                if (data.length === 0) {
-                    resultDiv.innerHTML = "<p style='color:red'>لا توجد بيانات لهذا الرقم.</p>";
-                } else {
-                    let table = `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>رقم الفحص</th>
-                                    <th>السنة</th>
-                                    <th>اسم مقدم الطلب</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-
-                    data.forEach(row => {
-                        table += `
-                            <tr>
-                                <td>${row[0]}</td>
-                                <td>${row[1]}</td>
-                                <td>${row[2]}</td>
-                            </tr>
-                        `;
-                    });
-
-                    table += "</tbody></table>";
-                    resultDiv.innerHTML = table;
-                }
-            } catch (err) {
-                console.error(err);
-                resultDiv.innerHTML = "<p style='color:red'>حدث خطأ أثناء البحث.</p>";
-            }
-        }
-    </script>
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = "<p style='color:red'>حدث خطأ أثناء البحث.</p>";
+      }
+    }
+  </script>
 
 </body>
 </html>
